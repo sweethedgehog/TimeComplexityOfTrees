@@ -13,7 +13,7 @@ void Generator::genAscending(int size, int step, bool reversed, bool teeth, int 
 	std::ofstream outfile(path + R"(\data\Ascending_)" + std::to_string(size) + (reversed ? "_reversed" : "") +
 		(teeth ? "_teethed" : "") + (limits ? "_limited" : "") + "." + format);
 	for (int i = (size - 1) * reversed; i < size && i >= 0; i += step * (reversed ? -1 : 1)) {
-		if (limits ? !(i % limits) : false) {
+		if (limits != 0 && !(i % limits)) {
 			if (distrC(generator)) outfile << INT_MAX << sep;
 			else outfile << INT_MIN << sep;
 		}
@@ -27,7 +27,7 @@ void Generator::genRandom(int size, int min, int max, bool teeth, int limits) {
 	std::ofstream outfile(path + R"(\data\Random_)" + std::to_string(size) +
 		(teeth ? "_teethed" : "") + (limits ? "_limited" : "") + "." + format);
 	for (int i = 0; i < size; ++i) {
-		if (limits ? !(i % limits) : false) {
+		if (limits != 0 && !(i % limits)) {
 			if (distrC(generator)) outfile << INT_MAX << sep;
 			else outfile << INT_MIN << sep;
 		}
@@ -35,4 +35,16 @@ void Generator::genRandom(int size, int min, int max, bool teeth, int limits) {
 		else outfile << max - distr(generator) << sep;
 	}
 	outfile.close();
+}
+
+
+void Generator::genTeethed(int size, int min, int max, int count, bool reversed) {
+    std::ofstream outfile(path + R"(\data\Teethed_)" + std::to_string(size) +
+    (reversed ? "_reversed" : "") + "." + format);
+    int d = (max-min) / (size / count) ;
+    for (int i = 0; i < count; ++i) {
+        for (int j = 0; j < size/count; ++j) {
+            outfile << (reversed ? max - d * j : min + d * j) << sep;
+        }
+    }
 }
