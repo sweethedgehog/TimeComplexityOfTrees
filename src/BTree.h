@@ -9,7 +9,7 @@ public:
 	BTree(var maxCountOfChildren);
 	~BTree();
 	bool insert(int value, bool isRec = true);
-	bool search(int value, bool isRec = true);
+	bool find(int value, bool isRec = true);
 	// todo remove
 	var getHeight();
 	var getSize();
@@ -26,12 +26,12 @@ private:
 	Node* root;
 	var size;
 	var countOfValues;
-	bool recInsert(Node* node, int value/*, var height*/);
+	bool recInsert(Node* node, int value);
 	bool nonRecInsert(int value);
-	bool recSearch(Node* node, int value);
-	bool nonRecSearch(int value);
-	// void recRemove(Node* node, int value);
+	bool recFind(Node* node, int value);
+	bool nonRecFind(int value);
 	bool insertInOrder(std::vector<std::pair<int, Node*>>& values, int value, Node* node);
 	Node* getChild(std::vector<std::pair<int, Node*>>& values, int value, Node* child);
 	bool binSearch(std::vector<std::pair<int, Node*>>& values, int value);
+	bool checkStackOverFlow(Node* node);
 };
