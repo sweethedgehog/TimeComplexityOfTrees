@@ -9,7 +9,7 @@ int genPriority() {
 }
 
 
-Node::Node(int value) {
+Treap::Node::Node(int value) {
     this->value = value;
     this->left = nullptr;
     this->right = nullptr;
@@ -17,7 +17,7 @@ Node::Node(int value) {
 }
 
 
-std::pair<Node *, Node *> Treap::splitRec(Node *curr, int value) {
+std::pair<Treap::Node *, Treap::Node *> Treap::splitRec(Node *curr, int value) {
     if (curr == nullptr) {
         return {nullptr, nullptr};
     }
@@ -32,7 +32,7 @@ std::pair<Node *, Node *> Treap::splitRec(Node *curr, int value) {
     }
 }
 
-std::pair<Node *, Node *> Treap::split(Node *curr, int value) {
+std::pair<Treap::Node *, Treap::Node *> Treap::split(Node *curr, int value) {
     std::stack<Node*> s1;
     std::stack<Node*> s2;
     Node* currPtr = curr;
@@ -86,7 +86,7 @@ std::pair<Node *, Node *> Treap::split(Node *curr, int value) {
 }
 
 
-Node *Treap::merge(Node *left, Node *right) {
+Treap::Node *Treap::merge(Node *left, Node *right) {
     Node *curr = nullptr;
     if (left == nullptr) {
         return right;
@@ -128,7 +128,7 @@ Node *Treap::merge(Node *left, Node *right) {
 }
 
 
-Node *Treap::mergeRec(Node *left, Node *right) {
+Treap::Node *Treap::mergeRec(Node *left, Node *right) {
     if (left == nullptr) {
         return right;
     }
@@ -161,12 +161,12 @@ void Treap::insert(int value) {
 }
 
 
-Node *Treap::findRec(int value) {
+Treap::Node *Treap::findRec(int value) {
     return find(root, value);
 }
 
 
-Node *Treap::find(Node *&curr, int value) {
+Treap::Node *Treap::find(Node *&curr, int value) {
     if (curr == nullptr) {
         return nullptr;
     }
@@ -180,7 +180,7 @@ Node *Treap::find(Node *&curr, int value) {
     }
 }
 
-Node *Treap::find(int value) {
+Treap::Node *Treap::find(int value) {
     Node *curr = root;
     while (curr != nullptr) {
         if (curr->value == value) {
@@ -200,7 +200,7 @@ void Treap::removeRec(int value) {
     root = removeRec(root, value);
 }
 
-Node *Treap::removeRec(Node *&curr, int value) {
+Treap::Node *Treap::removeRec(Node *&curr, int value) {
     if (curr == nullptr) {
         return nullptr;
     }

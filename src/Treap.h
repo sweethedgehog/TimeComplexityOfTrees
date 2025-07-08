@@ -6,14 +6,15 @@
 #include <queue>
 #include <stack>
 
-class Node {
-public:
-    int value, priority;
-    Node *left, *right;
-    explicit Node(int value);
-};
+
 
 class Treap {
+    class Node {
+    public:
+        int value, priority;
+        Node *left, *right;
+        explicit Node(int value);
+    };
     Node *root;
     Node *find(Node *&root, int value);
     Node *removeRec(Node *&curr, int value);
