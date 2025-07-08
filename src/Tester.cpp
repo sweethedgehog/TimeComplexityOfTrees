@@ -1,24 +1,25 @@
 #include <iostream>
-#include "Treap.h"
+#include "BTree.h"
 #include "Generator.h"
 
-void GenerateTests() {
-    Generator generator(R"(C:\Users\ilyas\CLionProjects\TimeComplexityOfTrees)", "csv", "\n");
-    const int SIZE = 10000000; // 10^7
-    generator.genAscending(SIZE, 2, false);
-    generator.genAscending(SIZE, 1, true);
-    generator.genAscending(SIZE, 1, true, true);
-    generator.genAscending(SIZE, 1, false, false, 131);
+using namespace std;
 
-    generator.genRandom(SIZE, -100000000, 100000000);
-    generator.genRandom(SIZE, -100000000, 100000000, true);
-    generator.genRandom(SIZE, -1000000, 1000000, false, 131);
-
-    generator.genTeethed(SIZE, -100000000, 100000000, 1000, false);
-    generator.genTeethed(SIZE, -100000000, 100000000, 10, true);
+void printArr(int* a, int size) {
+	for (int i = 0; i < size; i++) cout << a[i] << " ";
+	cout << endl;
 }
-int main() {
 
-    GenerateTests();
+int main() {
+	BTree tree(1000);
+	for (int i = 0; i < 1000000; ++i) {
+		// cout << i << endl;
+		tree.insert(i, false);
+	}
+	cout << "halfway" << endl;
+	for (int i = 0; i < 1000000; ++i) {
+		bool flag = tree.search(i, false);
+		if (!flag) throw "hurma";
+		// cout << i << "\t" << flag << endl;
+	}
     return 0;
 }
