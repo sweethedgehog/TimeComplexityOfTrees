@@ -19,6 +19,5 @@ void GenerateTests() {
 }
 int main() {
 
-    GenerateTests();
     return 0;
 }
