@@ -1,24 +1,48 @@
+#include <algorithm>
 #include <iostream>
-#include "Treap.h"
+#include <random>
+
+#include "BTree.h"
+#include "CoolBTree.h"
 #include "Generator.h"
+#include "Treap.h"
 
-void GenerateTests() {
-    Generator generator(R"(C:\Users\ilyas\CLionProjects\TimeComplexityOfTrees)", "csv", "\n");
-    const int SIZE = 10000000; // 10^7
-    generator.genAscending(SIZE, 2, false);
-    generator.genAscending(SIZE, 1, true);
-    generator.genAscending(SIZE, 1, true, true);
-    generator.genAscending(SIZE, 1, false, false, 131);
+using namespace std;
 
-    generator.genRandom(SIZE, -100000000, 100000000);
-    generator.genRandom(SIZE, -100000000, 100000000, true);
-    generator.genRandom(SIZE, -1000000, 1000000, false, 131);
-
-    generator.genTeethed(SIZE, -100000000, 100000000, 1000, false);
-    generator.genTeethed(SIZE, -100000000, 100000000, 10, true);
+void printArr(int* a, int size) {
+	for (int i = 0; i < size; i++) cout << a[i] << " ";
+	cout << endl;
 }
-int main() {
 
-    GenerateTests();
+int main() {
+	CoolBTree<int> tree(3);
+	// BTree tree(3);
+	// Treap tree;
+
+	int n;
+	cin >> n;
+	vector<int> arr;
+	for (int i = 0; i < n; i++) {
+		int buf = i;
+		// cin >> buf;
+		// cout << buf << endl;
+		arr.push_back(buf);
+		tree.insert(buf, false);
+	}
+	shuffle(arr.begin(), arr.end(), std::mt19937(std::random_device()()));
+	cout << "size:\t" << tree.getSize() << "\theight:\t" << tree.getHeight() << endl;
+	for (int i = 0; i < tree.getSize(); i++) {
+		if (!tree.find(arr[i], false)) {
+			cerr << "error on\t" << arr[i] << endl;
+			exit(1);
+		}
+	}
+
+	// tree.insert(0);
+	// tree.insert(1);
+	// tree.insert(2);
+	// tree.insert(1);
+
+	cout << "it's okay" << endl;
     return 0;
 }

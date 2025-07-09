@@ -1,7 +1,11 @@
 #include "BTree.h"
 
 BTree::BTree(var count) {
-	if (count < 3) throw "Not enough values";
+	if (count < 3) {
+		std::cerr << "BTree::maxCountOfChildren must be greater than 2" << std::endl;
+		exit(1);
+	}
+	size = 0;
 	root = nullptr;
 	countOfValues = count - 1;
 }
@@ -11,20 +15,28 @@ BTree::~BTree() {
 BTree::Node::Node(int value, Node* child, var height) {
 	this->height = height;
 	values.emplace_back(value, child);
-	parent = nullptr;
 	megaChild = nullptr;
-	// todo something wrong i guess
 }
 BTree::Node::Node(std::vector<std::pair<int, Node*>> values, var height) {
 	this->height = height;
 	this->values = values;
-	parent = nullptr;
 	megaChild = nullptr;
-	// todo something wrong i guess
 }
 BTree::Node::~Node() {
 	for (var i = 0; i < values.size(); i++) delete values[i].second;
 	delete megaChild;
+}
+
+std::pair<bool, std::pair<int, BTree::Node *>> BTree::checkStackOverFlow(Node *node) {
+	if (node->values.size() > countOfValues) {
+		var midInd = node->values.size() / 2;
+		Node* boomNode = new Node(std::vector(node->values.begin(), node->values.end() - midInd - !(countOfValues % 2)), node->height);
+		boomNode->megaChild = node->values[midInd].second;
+		auto buf = node->values[midInd].first;
+		node->values = std::vector(node->values.begin() + midInd + 1, node->values.end());
+		return {true, {buf, boomNode}};
+	}
+	return {false, {node->values[0].first, nullptr}};
 }
 bool BTree::insert(int value, bool isRec) {
 	if (root == nullptr) {
@@ -34,121 +46,103 @@ bool BTree::insert(int value, bool isRec) {
 	}
 	if (isRec) {
 		if (!recInsert(root, value)) return false;
+		auto buf = checkStackOverFlow(root);
+		if (buf.first) {
+			Node* bufNode = root;
+			root = new Node(buf.second.first, buf.second.second, buf.second.second->height + 1);
+			root->megaChild = bufNode;
+		}
 		size++;
 		return true;
 	}
-	if (!nonRecInsert(value)) return false;
+	if (!iterativeInsert(value)) return false;
 	size++;
 	return true;
 }
-bool BTree::recInsert(Node* node, int value/*, var height*/) {
-	bool flag;
-	if (node->height == 0) flag = insertInOrder(node->values, value, nullptr);
-	else flag = recInsert(getChild(node->values, value, node->megaChild), value);
-	if (node->megaChild) node->megaChild->parent = node;
-	if (node->values.size() > countOfValues) {
-		var midInd = node->values.size() / 2;
-		Node* boomNode = new Node(std::vector(node->values.begin() + midInd + 1, node->values.end()), node->height);
-		boomNode->parent = node->parent;
-		if (!node->parent) {
-			node->parent = new Node(node->values[midInd].first, node, node->height + 1);
-			root = node->parent;
-			boomNode->megaChild = node->megaChild;
-		}
-		else {
-			insertInOrder(node->parent->values, node->values[midInd].first, boomNode);
-			if (node->parent->megaChild == node) node->parent->values[node->parent->values.size() - 1].second = node;
-		}
-		node->parent->megaChild = boomNode;
-		boomNode->megaChild = node->megaChild;
-		node->megaChild = node->values[midInd].second;
-		node->values = std::vector(node->values.begin(), node->values.end() - midInd - !(countOfValues % 2));
-	}
-	return flag;
-}
-bool BTree::nonRecInsert(int value) {
-	Node* node = root;
-	bool flag;
-	while (true) {
-		if (node->megaChild) node->megaChild->parent = node;
-		if (node->height == 0) {
-			flag = insertInOrder(node->values, value, nullptr);
-			break;
-		}
-		node = getChild(node->values, value, node->megaChild);
-	}
+bool BTree::recInsert(Node* node, int value) {
+	var child = binSearch(node->values, value);
+	if (child == -1 ? false : node->values[child].first == value) return false;
+	if (node->height == 0) return insertInOrder(node->values, value, nullptr);
+	bool flag = recInsert(child == -1 ? node->megaChild : node->values[child].second, value);
 	if (!flag) return false;
-	while (node) {
-		if (node->values.size() > countOfValues) {
-			var midInd = node->values.size() / 2;
-			Node* boomNode = new Node(std::vector(node->values.begin() + midInd + 1, node->values.end()), node->height);
-			boomNode->parent = node->parent;
-			if (!node->parent) {
-				node->parent = new Node(node->values[midInd].first, node, node->height + 1);
-				root = node->parent;
-				boomNode->megaChild = node->megaChild;
-			}
-			else {
-				insertInOrder(node->parent->values, node->values[midInd].first, boomNode);
-				if (node->parent->megaChild == node) node->parent->values[node->parent->values.size() - 1].second = node;
-			}
-			node->parent->megaChild = boomNode;
-			boomNode->megaChild = node->megaChild;
-			node->megaChild = node->values[midInd].second;
-			node->values = std::vector(node->values.begin(), node->values.end() - midInd - !(countOfValues % 2));
-		}
-		node = node->parent;
+
+	auto buf = checkStackOverFlow(child == -1 ? node->megaChild : node->values[child].second);
+	if (buf.first) {
+		insertInOrder(node->values, buf.second.first, buf.second.second);
 	}
 	return true;
 }
-bool BTree::search(int value, bool isRec) {
-	if (isRec) return recSearch(root, value);
-	return nonRecSearch(value);
+bool BTree::iterativeInsert(int value) {
+	Node* node = root;
+	std::stack<std::pair<Node*, var>> stack;
+	while (true) {
+		var child = binSearch(node->values, value);
+		if (child == -1 ? false : node->values[child].first == value) return false;
+		if (node->height == 0) {
+			if (!insertInOrder(node->values, value, nullptr)) return false;
+			break;
+		}
+		stack.emplace(node, child);
+		node = child == -1 ? node->megaChild : node->values[child].second;
+	}
+	while (!stack.empty()) {
+		node = stack.top().first;
+		auto buf = checkStackOverFlow(stack.top().second == -1 ? node->megaChild : node->values[stack.top().second].second);
+		if (buf.first) {
+			insertInOrder(node->values, buf.second.first, buf.second.second);
+		}
+		stack.pop();
+	}
+	auto buf = checkStackOverFlow(root);
+	if (buf.first) {
+		Node* bufNode = root;
+		root = new Node(buf.second.first, buf.second.second, buf.second.second->height + 1);
+		root->megaChild = bufNode;
+	}
+	return true;
 }
-bool BTree::recSearch(Node *node, int value) {
-	if (binSearch(node->values, value)) return true;
+bool BTree::find(int value, bool isRec) {
+	if (!root) return false;
+	if (isRec) return recFind(root, value);
+	return iterativeFind(value);
+}
+bool BTree::recFind(Node *node, int value) {
+	var bufInd = binSearch(node->values, value);
+	if (bufInd == -1 ? false : node->values[bufInd].first == value) return true;
 	if (node->height == 0) return false;
-	return recSearch(getChild(node->values, value, node->megaChild), value);
+	var child = binSearch(node->values, value);
+	if (child == -1) return recFind(node->megaChild, value);
+	return recFind(node->values[child].second, value);
 }
-bool BTree::nonRecSearch(int value) {
+bool BTree::iterativeFind(int value) {
 	Node* node = root;
 	while (node) {
-		if (binSearch(node->values, value)) return true;
+		var bufInd = binSearch(node->values, value);
+		if (bufInd == -1 ? false : node->values[bufInd].first == value) return true;
 		if (node->height == 0) return false;
-		node = getChild(node->values, value, node->megaChild);
+		var child = binSearch(node->values, value);
+		if (child == -1) node = node->megaChild;
+		else node = node->values[child].second;
 	}
 	return false;
 }
-var BTree::getHeight() {return root->height;}
+var BTree::getHeight() {
+	if (!root) return 0;
+	return root->height + 1;
+}
 var BTree::getSize() {return size;}
-bool BTree::insertInOrder(std::vector<std::pair<int, Node*>>& values, int value, Node* buf) {
-	if (values.empty()) {
-		values.push_back({value, buf});
-		return true;
-	}
+bool BTree::insertInOrder(std::vector<std::pair<int, Node*>>& values, int value, Node* node) {
+	var bufInd = binSearch(values, value);
+	if (values[bufInd].first == value) return false;
+	values.insert(values.begin() + (bufInd == -1 ? values.size() : bufInd), {value, node});
+	return true;
+}
+var BTree::binSearch(std::vector<std::pair<int, Node*>>& values, int value) {
 	var left = 0, right = values.size() - 1;
 	while (left <= right) {
 		var mid = left + (right - left) / 2;
 		if (values[mid].first < value) left = mid + 1;
-		else if (values[mid].first > value) right = mid - 1;
-		else return false;
+		else right = mid - 1;
 	}
-	if (value == values[left].first) return false;
-	values.insert(values.begin() + left, {value, buf});
-	return true;
-}
-BTree::Node* BTree::getChild(std::vector<std::pair<int, Node*>>& values, int value, Node* child) {
-	for (auto & i : values) if (value < i.first) return i.second;
-	return child;
-}
-bool BTree::binSearch(std::vector<std::pair<int, Node*>>& values, int value) {
-	var left = 0, right = values.size() - 1;
-	while (left <= right) {
-		var mid = left + (right - left) / 2;
-		if (value < values[mid].first) right = mid - 1;
-		else if (value > values[mid].first) left = mid + 1;
-		else return true;
-	}
-	if (value == values[left].first) return true;
-	return false;
+	return left >= values.size() ? -1 : left;
 }
