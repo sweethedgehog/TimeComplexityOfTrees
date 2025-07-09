@@ -5,6 +5,7 @@
 #include "Treap.h"
 #include "CoolTreap.h"
 #include "Generator.h"
+#include "CoolRBTree.h"
 
 namespace fs = std::filesystem;
 using Clock = std::chrono::high_resolution_clock;
@@ -89,6 +90,33 @@ void testMixed(std::vector<int> &data, const std::string &baseName, std::ofstrea
         outCsv << totalTime << "\n";
     }
     outCsv.close();
+}
+
+void InsertTime(){
+    CoolRBTree<std::string> t;
+    std::ofstream out;
+    out.open("/Users/wateron1k/Documents/LLRBT_test/timesBR.txt");
+    auto start = Clock::now();
+    for(int i = 1; i <= 10000000; i++){
+        t.insert(std::to_string(i));
+        if (i % 1000 == 0){
+            auto elapsed = Clock::now() - start;
+            out << std::chrono::duration_cast<nanoseconds>(elapsed).count() << std::endl;
+            start = clocks::now();
+        }
+    }
+    out.close();
+}
+
+void InsertHeight(){
+    CoolRBTree<std::string> t;
+    std::ofstream out;
+    out.open("/Users/wateron1k/Documents/LLRBT_test/heightsBR.txt");
+    for(int i = 1; i <= 10000000; i++){
+        t.insert(std::to_string(i));
+        out << t.height() << std::endl;
+    }
+    out.close();
 }
 
 int main() {
