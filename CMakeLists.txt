@@ -7,4 +7,5 @@ add_executable(Last_stand_2025 src/Tester.cpp
         src/Treap.cpp
         src/Treap.h
         src/Generator.cpp
-        src/Generator.h)
+        src/Generator.h
+        src/CoolTreap.h)
