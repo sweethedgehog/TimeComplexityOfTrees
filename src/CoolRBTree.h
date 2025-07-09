@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stack>
 
 template <typename T>
 
@@ -254,10 +255,93 @@ public:
     }
     
     int height(){
-        return root->height;
+        return get_height(root);
     } //
     
     bool insert(T val){
+        if (!root){
+            root = new CoolNodeInt(val);
+            size = 1;
+            root->color = 0;
+            return true;
+        }
+        CoolNodeInt* cur = root;
+        CoolNodeInt* node;
+        std::stack<CoolNodeInt*> path;
+        while (cur){
+            if (cur->value > val){
+                path.push(cur);
+                if (cur->l){
+                    cur = cur->l;
+                }
+                else{
+                    cur->l = new CoolNodeInt(val);
+                    cur->l->parent = cur;
+                    cur = cur->l;
+                    break;
+                }
+            }
+            else if (cur->value < val){
+                path.push(cur);
+                if (cur->r){
+                    cur = cur->r;
+                }
+                else{
+                    cur->r = new CoolNodeInt(val);
+                    cur->r->parent = cur;
+                    cur = cur->r;
+                    break;
+                }
+            }
+            else{
+                return false;
+            }
+        }
+        while (!path.empty()){
+            node = path.top();
+            path.pop();
+            if (cur == node->l){
+                if (cur->color == 1 && node->color == 1){
+                    RightRotate(node->parent);
+                    ColorInvertion(node);
+                    update_height(cur);
+                    update_height(node);
+                    cur = node;
+                }
+                else{
+                    cur = node;
+                }
+            }
+            else{
+                if (cur->color == 1 && node->color == 1){
+                    LeftRightRotate(node->parent);
+                    ColorInvertion(node->parent);
+                    cur = node->parent;
+                    path.pop();
+                }
+                else if(node->l){
+                    if (node->l->color == 1 && node->r->color == 1){
+                        ColorInvertion(node);
+                        cur = node;
+                    }
+                    else if (node->r->color == 1){
+                        LeftRotate(node);
+                        cur = cur;
+                    }
+                    else{
+                        cur = node;
+                    }
+                }
+                else{
+                    LeftRotate(node);
+                    cur = cur;
+                }
+            }
+        }
+        return true;
+    }
+    
+    bool InsertRecursive(T val){
         if (!root){
             size = 1;
             root = new CoolNodeInt(val);
@@ -273,7 +357,6 @@ public:
         //root = buffer;
         return true;
     }
-    //bool InsertRecursive(int val); Только рекурсивная вставка (insert - рекурсивная)
     bool remove(T val); // Еще не реализовано
     bool find(T val){
         if (find(root, val)){
