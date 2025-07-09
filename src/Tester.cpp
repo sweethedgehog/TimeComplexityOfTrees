@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <chrono>
 #include <filesystem>
@@ -111,8 +112,4 @@ int main() {
 //        testMixed(data, f.filename().string(), mixedOperation);
 //    }
 //    mixedOperation.close();
-
-
-
-    return 0;
 }
