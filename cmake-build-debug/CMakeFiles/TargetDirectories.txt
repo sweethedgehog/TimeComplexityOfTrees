@@ -1,3 +1,0 @@
-C:/Users/ilyas/CLionProjects/TimeComplexityOfTrees/cmake-build-debug/CMakeFiles/Last_stand_2025.dir
-C:/Users/ilyas/CLionProjects/TimeComplexityOfTrees/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/ilyas/CLionProjects/TimeComplexityOfTrees/cmake-build-debug/CMakeFiles/rebuild_cache.dir
