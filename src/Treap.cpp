@@ -1,19 +1,19 @@
 #include "Treap.h"
 
-std::random_device rand_device;
-std::mt19937 generation(rand_device());
-
-int genPriority() {
-    std::uniform_int_distribution<> generator(0, 1000000);
-    return generator(generation);
-}
+//std::random_device rand_device;
+//std::mt19937 generation(rand_device());
+//
+//int genPriority() {
+//    std::uniform_int_distribution<> generator(0, 1000000);
+//    return generator(generation);
+//}
 
 
 Treap::Node::Node(int value) {
     this->value = value;
     this->left = nullptr;
     this->right = nullptr;
-    this->priority = genPriority();
+//    this->priority = genPriority();
 }
 
 
@@ -68,16 +68,16 @@ std::pair<Treap::Node *, Treap::Node *> Treap::split(Node *curr, int value) {
     }
 
     while (!s1.empty()) {
-        Node* curr = s1.top();
+        Node* pNode = s1.top();
         s1.pop();
-        curr->right = node1;
-        node1 = curr;
+        pNode->right = node1;
+        node1 = pNode;
     }
     while (!s2.empty()) {
-        Node* curr = s2.top();
+        Node* pNode = s2.top();
         s2.pop();
-        curr->left = node2;
-        node2 = curr;
+        pNode->left = node2;
+        node2 = pNode;
     }
 
     return {node1, node2};
