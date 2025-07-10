@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stack>
-
 template <typename T>
 
 class CoolRBTree{
@@ -112,17 +110,68 @@ private:
             color_change(node);
         }
     } //
+    
+    CoolNodeInt* RC_tree_change(CoolNodeInt* cur, CoolNodeInt* node){
+        if (cur->color == 1 && node->color == 1){
+            LeftRightRotate(node->parent);
+            ColorInvertion(cur);
+            update_height(node);
+            update_height(cur);
+            return cur;
+        }
+        else if(node->l){
+            if (node->l->color == 1 && node->r->color == 1){
+                ColorInvertion(node);
+                update_height(cur);
+                update_height(node);
+                return node;
+            }
+            else if (cur->color == 1){
+                LeftRotate(node);
+                update_height(node);
+                update_height(cur);
+                return cur;
+            }
+            else{
+                update_height(cur);
+                update_height(node);
+                return node;
+            }
+        }
+        else{
+            LeftRotate(node);
+            update_height(node);
+            update_height(cur);
+            return cur;
+        }
+    }
+
+    CoolNodeInt* LC_tree_change(CoolNodeInt* cur, CoolNodeInt* node){
+        if (cur->color == 1 && node->color == 1){
+            RightRotate(node->parent);
+            ColorInvertion(node);
+        }
+        update_height(cur);
+        update_height(node);
+        return node;
+    }
+    
     CoolNodeInt* InsertRec(CoolNodeInt* root, T val){
         CoolNodeInt* buffer;
         if (root->value > val){
             if (root->l){
                 buffer = InsertRec(root->l, val);
                 if (buffer){
-                    //root->l = buffer;
-                    //buffer->parent = root;
-                    if (buffer->color == 1 && root->color == 1){
-                        RightRotate(root->parent);
-                        ColorInvertion(root);
+                    root = buffer->parent;
+                    if (!root){
+                        update_height(buffer);
+                        return buffer;
+                    }
+                    if (root->l == buffer){
+                        return LC_tree_change(buffer, root);
+                    }
+                    else{
+                        return RC_tree_change(buffer, root);
                     }
                 }
                 else{
@@ -133,34 +182,23 @@ private:
                 root->l = new CoolNodeInt(val);
                 buffer = root->l;
                 buffer->parent = root;
-                if (buffer->color == 1 && root->color == 1){
-                    RightRotate(root->parent);
-                    ColorInvertion(root);
-                }
+                return LC_tree_change(buffer, root);
             }
         }
         else if (root->value < val){
             if (root->r){
                 buffer = InsertRec(root->r, val);
                 if (buffer){
-                    //root->r = buffer;
-                    //buffer->parent = root;
-                    if (buffer->color == 1 && root->color == 1){
-                        LeftRightRotate(root->parent);
-                        ColorInvertion(root->parent);
+                    root = buffer->parent;
+                    if (!root){
+                        update_height(buffer);
+                        return buffer;
                     }
-                    else if(root->l){
-                        if (root->l->color == 1 && root->r->color == 1){
-                            ColorInvertion(root);
-                        }
-                        else if (root->r->color == 1){
-                            LeftRotate(root);
-                            return root->parent;
-                        }
+                    if (root->l == buffer){
+                        return LC_tree_change(buffer, root);
                     }
                     else{
-                        LeftRotate(root);
-                        return root->parent;
+                        return RC_tree_change(buffer, root);
                     }
                 }
                 else{
@@ -171,23 +209,7 @@ private:
                 root->r = new CoolNodeInt(val);
                 buffer = root->r;
                 buffer->parent = root;
-                if (buffer->color == 1 && root->color == 1){
-                    LeftRightRotate(root->parent);
-                    ColorInvertion(root->parent);
-                }
-                else if(root->l){
-                    if (root->l->color == 1 && root->r->color == 1){
-                        ColorInvertion(root);
-                    }
-                    else{
-                        LeftRotate(root);
-                        return root->parent;
-                    }
-                }
-                else{
-                    LeftRotate(root);
-                    return root->parent;
-                }
+                return RC_tree_change(buffer, root);
             }
         }
         else if (root->value == val){
@@ -257,7 +279,6 @@ public:
     int height(){
         return get_height(root);
     } //
-    
     bool insert(T val){
         if (!root){
             root = new CoolNodeInt(val);
@@ -267,10 +288,10 @@ public:
         }
         CoolNodeInt* cur = root;
         CoolNodeInt* node;
-        std::stack<CoolNodeInt*> path;
+        //std::stack<CoolNodeInt*> path;
         while (cur){
             if (cur->value > val){
-                path.push(cur);
+                //path.push(cur);
                 if (cur->l){
                     cur = cur->l;
                 }
@@ -282,7 +303,7 @@ public:
                 }
             }
             else if (cur->value < val){
-                path.push(cur);
+                //path.push(cur);
                 if (cur->r){
                     cur = cur->r;
                 }
@@ -297,50 +318,19 @@ public:
                 return false;
             }
         }
-        while (!path.empty()){
-            node = path.top();
-            path.pop();
+        while (cur->parent){
+            node = cur->parent;
             if (cur == node->l){
-                if (cur->color == 1 && node->color == 1){
-                    RightRotate(node->parent);
-                    ColorInvertion(node);
-                    update_height(cur);
-                    update_height(node);
-                    cur = node;
-                }
-                else{
-                    cur = node;
-                }
+                cur = LC_tree_change(cur, node);
             }
             else{
-                if (cur->color == 1 && node->color == 1){
-                    LeftRightRotate(node->parent);
-                    ColorInvertion(node->parent);
-                    cur = node->parent;
-                    path.pop();
-                }
-                else if(node->l){
-                    if (node->l->color == 1 && node->r->color == 1){
-                        ColorInvertion(node);
-                        cur = node;
-                    }
-                    else if (node->r->color == 1){
-                        LeftRotate(node);
-                        cur = cur;
-                    }
-                    else{
-                        cur = node;
-                    }
-                }
-                else{
-                    LeftRotate(node);
-                    cur = cur;
-                }
+                cur = RC_tree_change(cur, node);
             }
         }
+        update_height(cur);
+        size += 1;
         return true;
     }
-    
     bool InsertRecursive(T val){
         if (!root){
             size = 1;
@@ -357,6 +347,7 @@ public:
         //root = buffer;
         return true;
     }
+    
     bool remove(T val); // Еще не реализовано
     bool find(T val){
         if (find(root, val)){
